@@ -813,6 +813,11 @@ class CurrentGadgets:
         return CurrentGadgets._internal_find('get_pop_rcx_ret')
 
     @staticmethod
+    def pop_rcx_rbx_ret() -> int:
+        """pop rcx; pop rbx; ret"""
+        return CurrentGadgets._internal_find('get_pop_rcx_rbx_ret')
+
+    @staticmethod
     def pop_rbp_ret() -> int:
         """pop rbp; ret"""
         return CurrentGadgets._internal_find('get_pop_rbp_ret')
@@ -1090,8 +1095,7 @@ class CurrentGadgets:
             CurrentGadgets.__try_get_rsi_gadget(src_addr),
             CurrentGadgets.pop_rdi_ret(),
             dst_addr,
-            CurrentGadgets.pop_rcx_ret(),
-            length
+            CurrentGadgets.__try_get_rcx_gadget(length)
         ]
         if do_cld:
             layout.append(CurrentGadgets.find_gadget('fcc3', 'opcode'))
@@ -1106,6 +1110,13 @@ class CurrentGadgets:
             return [CurrentGadgets.pop_rdx_ret(), rdx_val]
         except:
             return [CurrentGadgets.pop_rdx_rbx_ret(), rdx_val, rbx_val]
+
+    @staticmethod
+    def __try_get_rcx_gadget(rcx_val, rbx_val=0) -> list:
+        try:
+            return [CurrentGadgets.pop_rcx_ret(), rcx_val]
+        except:
+            return [CurrentGadgets.pop_rcx_rbx_ret(), rcx_val, rbx_val]
 
     @staticmethod
     def __try_get_rsi_gadget(rsi_val, r15_val=0) -> list:
@@ -1126,8 +1137,7 @@ class CurrentGadgets:
                 para1
                 ]
             if para2 is not None:
-                layout.append(CurrentGadgets.pop_rcx_ret())
-                layout.append(para2)
+                layout.append(CurrentGadgets.__try_get_rcx_gadget(para2))
 
             if para3 is not None:
                 layout.append(CurrentGadgets.__try_get_rdx_gadget(para3, para1))
